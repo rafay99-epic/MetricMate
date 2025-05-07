@@ -1,0 +1,8 @@
+pyinstaller
+pandas 
+matplotlib 
+seaborn 
+numpy 
+tkcalendar 
+scipy
+pillow
