@@ -1,110 +1,202 @@
-# Gaming Performance Analysis Tools
+# 🎮 Metric Mate
 
-This repository contains tools for analyzing gaming performance data collected from hardware monitoring during gameplay sessions. The tools help visualize and understand temperature patterns, performance metrics, and system behavior during gaming sessions.
+A modern, user-friendly GUI application for analyzing and visualizing gaming performance metrics. Built with Python and Tkinter, **Metric Mate** features a sleek **Tokyo Night** theme and powerful tools for performance diagnostics and insights.
 
-## Features
+![Metric Mate Screenshot](./icon.png)
 
-### Temperature Analysis (`analyze_temperatures.py`)
+---
 
-- Analyzes GPU temperatures across multiple gaming sessions
-- Identifies high and low temperature periods
-- Generates separate temperature graphs for each gaming session
-- Calculates average, maximum, and minimum temperatures
-- Handles corrupted or missing data gracefully
+## 🚀 Features
 
-### Key Metrics Tracked
+### 📊 Interactive Data Visualization
 
-- GPU Temperature
-- GPU Hot Spot Temperature
-- Temperature trends over time
-- High and low temperature periods
+- Real-time performance metrics display
+- Multiple graph types: Temperature, CPU Usage, GPU Usage
+- Customizable time ranges
+- Zoom, pan, and reset capabilities
 
-## Requirements
+### 📈 In-Depth Analysis
 
-- Python 3.x
-- Required Python packages:
-  - pandas
-  - matplotlib
-  - seaborn
-  - numpy
+- Statistical summaries (mean, median, std. dev.)
+- Anomaly detection for outlier performance
+- Trend tracking over time
+- Correlation analysis across metrics
 
-## Installation
+### 🎨 Modern UI
 
-1. Clone this repository
-2. Install required packages:
+- Beautiful **Tokyo Night** dark theme
+- Rounded corners & responsive layout
+- Optimized for all screen sizes
+- Intuitive controls for smooth user experience
 
-```bash
-pip install pandas matplotlib seaborn numpy
+### 📁 Smart Data Management
+
+- Import CSV files
+- Export graphs and analysis (PNG/text)
+- Copy insights directly to clipboard
+
+---
+
+## 📦 Requirements
+
+- Python 3.7 or higher
+- Python packages:
+
+  ```bash
+  tkinter
+  pandas
+  matplotlib
+  seaborn
+  numpy
+  tkcalendar
+  scipy
+  ```
+
+---
+
+## 🛠 Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/rafay99-epic/MetricMate.git
+   cd MetricMate
+   ```
+
+2. **Create a virtual environment (recommended)**
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate      # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+---
+
+## ▶️ Usage
+
+1. **Run the application**
+
+   ```bash
+   python gaming_analyzer_gui.py
+   ```
+
+2. **Load your performance data**
+
+   - Click **"Select CSV File"** to import
+   - Supported format: CSV with performance metrics
+
+3. **Analyze**
+
+   - Choose analysis type and time range
+   - Click **"Analyze"** to generate graphs
+
+4. **Export**
+
+   - Save graphs (PNG)
+   - Export text summary
+   - Copy results to clipboard
+
+---
+
+## 📂 CSV Format
+
+Your CSV should include these columns:
+
+- `Time` _(optional but recommended)_
+- `CPU Temperature`, `GPU Temperature`
+- `CPU Usage`, `GPU Usage`
+
+**Example:**
+
+```csv
+Time,CPU Temperature,GPU Temperature,CPU Usage,GPU Usage
+2024-01-01 12:00:00,65,70,45,60
+2024-01-01 12:01:00,67,72,50,65
 ```
 
-## Usage
+---
 
-### Temperature Analysis
+## 🔍 Feature Breakdown
 
-1. Place your CSV files in the `Data` directory
-2. Run the analysis script:
+### Graph Types
 
-```bash
-python analyze_temperatures.py
-```
+- **Temperature**: Track CPU & GPU heat levels
+- **CPU/GPU Usage**: Visualize workload
+- **All Metrics**: Combined graph
+- **Correlation**: Analyze inter-metric relationships
+- **Heatmap**: Intensity mapping over time
+- **Trends**: Long-term performance evolution
 
-The script will:
+### Analysis Types
 
-- Process each CSV file in the Data directory
-- Generate temperature statistics for each session
-- Create separate graphs for each gaming session
-- Display high and low temperature periods
+- **Statistical Summary**
+- **Trend Analysis**
+- **Anomaly Detection**
+- **Time-Filtered Analysis**
 
-### Data Format
+### UI Highlights
 
-The CSV files should contain the following columns:
+- Responsive layout
+- Zoom, pan, reset on all graphs
+- Smooth dark theme design
+- Clean and organized interface
 
-- Date: Date of the gaming session
-- Time: Timestamp of the measurement
-- GPU Temperature columns (automatically detected)
+---
 
-## Output
+## 🧩 Roadmap
 
-### Temperature Analysis Output
+- [ ] Live performance monitoring
+- [ ] More input format support (e.g., JSON, XML)
+- [ ] Custom alert system
+- [ ] Performance benchmarking module
+- [ ] Additional export formats (PDF, XLSX)
+- [ ] Plugin system for extensibility
 
-- Console output showing:
-  - Average, maximum, and minimum temperatures
-  - High temperature periods (with timestamps)
-  - Low temperature periods (with timestamps)
-- Separate graphs for each gaming session showing:
-  - Temperature trends over time
-  - Clear time labels (HH:MM format)
-  - Temperature range (40-90°C)
-  - Multiple GPU temperature metrics
+---
 
-## Data Cleaning Features
+## 🙌 Contributing
 
-The tools include several data cleaning features:
+Pull requests are welcome! For major changes, please open an issue first to discuss what you’d like to change.
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-- Handles missing or corrupted data points
-- Filters out unrealistic temperature values
-- Resamples data to reduce noise
-- Skips sessions with invalid data
-- Handles different date/time formats
+---
 
-## Recent Changes
+## 📄 License
 
-1. Separated temperature graphs for each session
-2. Improved time axis formatting
-3. Added data validation and cleaning
-4. Enhanced error handling
-5. Added temperature range validation
-6. Improved legend readability
-7. Added data resampling for cleaner graphs
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Future Improvements
+---
 
-- Add CPU temperature analysis
-- Add performance metrics analysis
-- Add power consumption tracking
-- Add frame rate correlation
-- Add export functionality for reports
+## 💬 Support
 
-## Contributing
+If you encounter bugs or have suggestions:
 
-Feel free to submit issues and enhancement requests!
+1. Check the [Issues](https://github.com/rafay99-epic/MetricMate/issues) page.
+2. Open a new issue if it’s not already reported.
+
+---
+
+## 🙏 Acknowledgments
+
+- Inspired by the [Tokyo Night](https://github.com/enkia/tokyo-night-vscode-theme) theme
+- Python open-source community
+- All contributors and users of Metric Mate
+
+---
+
+## 👨‍💻 Author
+
+**Abdul Rafay**
+A passionate full-stack developer and machine learning engineer. I love creating tools that blend elegant UI with powerful backend logic, especially in the performance and data visualization domain.
+🌐 **Portfolio**: [rafay99.com](https://rafay99.com)
+📫 **Email**: [99marafay@gmail.com](mailto:99marafay@gmail.com)
+
+---
+
+Let me know if you want a badge section (e.g., Python version, License, GitHub stars) or a live demo GIF embedded.
