@@ -25,7 +25,9 @@ TOKYO_NIGHT = {
     'graph_bg': '#24283b',
     'graph_grid': '#414868',
     'graph_line': '#7aa2f7',
-    'graph_text': '#c0caf5'
+    'graph_text': '#c0caf5',
+    'border': '#414868',
+    'hover': '#565f89'
 }
 
 class GamingAnalyzerGUI:
@@ -64,31 +66,77 @@ class GamingAnalyzerGUI:
         self.root.grid_columnconfigure(0, weight=1)
         
     def configure_theme(self):
-        """Configure the Tokyo Night theme"""
+        """Configure the Tokyo Night theme with rounded corners"""
         self.style = ttk.Style()
         self.style.theme_use('clam')
         
         # Configure colors
         self.root.configure(bg=TOKYO_NIGHT['bg'])
         
-        # Configure ttk styles
-        self.style.configure('TFrame', background=TOKYO_NIGHT['bg'])
-        self.style.configure('TLabel', background=TOKYO_NIGHT['bg'], foreground=TOKYO_NIGHT['fg'])
+        # Configure ttk styles with rounded corners
+        self.style.configure('TFrame', 
+                           background=TOKYO_NIGHT['bg'],
+                           relief='flat')
+        
+        self.style.configure('TLabel', 
+                           background=TOKYO_NIGHT['bg'],
+                           foreground=TOKYO_NIGHT['fg'],
+                           font=('Segoe UI', 10))
+        
         self.style.configure('TButton', 
                            background=TOKYO_NIGHT['accent'],
                            foreground=TOKYO_NIGHT['bg'],
-                           padding=5)
+                           padding=10,
+                           font=('Segoe UI', 10, 'bold'),
+                           borderwidth=0,
+                           relief='flat')
+        
+        self.style.map('TButton',
+                      background=[('active', TOKYO_NIGHT['hover'])],
+                      foreground=[('active', TOKYO_NIGHT['bg'])])
+        
         self.style.configure('TLabelframe', 
                            background=TOKYO_NIGHT['bg'],
-                           foreground=TOKYO_NIGHT['fg'])
+                           foreground=TOKYO_NIGHT['fg'],
+                           borderwidth=2,
+                           relief='solid')
+        
         self.style.configure('TLabelframe.Label', 
                            background=TOKYO_NIGHT['bg'],
-                           foreground=TOKYO_NIGHT['fg'])
+                           foreground=TOKYO_NIGHT['fg'],
+                           font=('Segoe UI', 10, 'bold'))
+        
         self.style.configure('TCombobox',
                            fieldbackground=TOKYO_NIGHT['graph_bg'],
                            background=TOKYO_NIGHT['accent'],
                            foreground=TOKYO_NIGHT['fg'],
-                           arrowcolor=TOKYO_NIGHT['fg'])
+                           arrowcolor=TOKYO_NIGHT['fg'],
+                           borderwidth=0,
+                           relief='flat',
+                           padding=5)
+        
+        self.style.map('TCombobox',
+                      fieldbackground=[('readonly', TOKYO_NIGHT['graph_bg'])],
+                      selectbackground=[('readonly', TOKYO_NIGHT['accent'])],
+                      selectforeground=[('readonly', TOKYO_NIGHT['bg'])])
+        
+        # Configure custom styles for rounded corners
+        self.style.configure('Rounded.TFrame',
+                           background=TOKYO_NIGHT['graph_bg'],
+                           relief='flat',
+                           borderwidth=0)
+        
+        self.style.configure('Rounded.TButton',
+                           background=TOKYO_NIGHT['accent'],
+                           foreground=TOKYO_NIGHT['bg'],
+                           padding=10,
+                           font=('Segoe UI', 10, 'bold'),
+                           borderwidth=0,
+                           relief='flat')
+        
+        self.style.map('Rounded.TButton',
+                      background=[('active', TOKYO_NIGHT['hover'])],
+                      foreground=[('active', TOKYO_NIGHT['bg'])])
         
     def configure_matplotlib(self):
         """Configure matplotlib with Tokyo Night theme"""
@@ -116,8 +164,8 @@ class GamingAnalyzerGUI:
         })
         
     def create_widgets(self):
-        # Create main container with padding
-        self.main_container = ttk.Frame(self.root, padding="10")
+        # Create main container with padding and rounded corners
+        self.main_container = ttk.Frame(self.root, padding="20", style='Rounded.TFrame')
         self.main_container.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         # Configure grid weights for main container
@@ -310,8 +358,8 @@ class GamingAnalyzerGUI:
         ttk.Button(control_frame, text="Save Graph", command=self.save_graph).grid(row=0, column=3, padx=5, sticky=tk.E)
         
     def create_text_section(self):
-        text_frame = ttk.LabelFrame(self.main_container, text="Analysis Results", padding="10")
-        text_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
+        text_frame = ttk.LabelFrame(self.main_container, text="Analysis Results", padding="15", style='Rounded.TFrame')
+        text_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
         
         # Configure grid weights for text frame
         text_frame.grid_rowconfigure(0, weight=1)
@@ -325,7 +373,10 @@ class GamingAnalyzerGUI:
                                  fg=TOKYO_NIGHT['graph_text'],
                                  insertbackground=TOKYO_NIGHT['accent'],
                                  selectbackground=TOKYO_NIGHT['accent'],
-                                 selectforeground=TOKYO_NIGHT['bg'])
+                                 selectforeground=TOKYO_NIGHT['bg'],
+                                 font=('Segoe UI', 10),
+                                 relief='flat',
+                                 borderwidth=0)
         
         scrollbar = ttk.Scrollbar(text_frame, orient="vertical", command=self.text_widget.yview)
         self.text_widget.configure(yscrollcommand=scrollbar.set)
