@@ -31,7 +31,7 @@ TOKYO_NIGHT = {
 class GamingAnalyzerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Gaming Performance Analyzer")
+        self.root.title("Metric Mate")
         
         # Set minimum window size
         self.root.minsize(800, 600)
