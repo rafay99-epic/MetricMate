@@ -4,11 +4,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 import os
 from pathlib import Path
 import time
+from tkcalendar import DateEntry
+import json
+from scipy import stats
 
 # Tokyo Night color scheme
 TOKYO_NIGHT = {
@@ -36,15 +39,20 @@ class GamingAnalyzerGUI:
         # Make the window resizable
         self.root.resizable(True, True)
         
-        # Configure theme colors
-        self.configure_theme()
-        
         # Initialize variables
         self.df = None
         self.current_graph = None
         self.analysis_text = None
         self.last_draw_time = 0
         self.draw_throttle = 100  # milliseconds between redraws
+        self.alert_thresholds = {
+            'temperature': 80,  # °C
+            'cpu_usage': 90,    # %
+            'gpu_usage': 90     # %
+        }
+        
+        # Configure theme colors
+        self.configure_theme()
         
         # Configure matplotlib style
         self.configure_matplotlib()
@@ -118,6 +126,9 @@ class GamingAnalyzerGUI:
         self.main_container.grid_columnconfigure(1, weight=3)  # Graph section
         self.main_container.grid_columnconfigure(0, weight=1)  # Controls section
         
+        # Create menu bar
+        self.create_menu()
+        
         # File selection section
         self.create_file_section()
         
@@ -129,6 +140,33 @@ class GamingAnalyzerGUI:
         
         # Analysis text section
         self.create_text_section()
+        
+    def create_menu(self):
+        """Create the menu bar with additional features"""
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        # File menu
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Load CSV", command=self.load_csv)
+        file_menu.add_command(label="Export Analysis", command=self.export_analysis)
+        file_menu.add_command(label="Export Graph", command=self.save_graph)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        
+        # Analysis menu
+        analysis_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Analysis", menu=analysis_menu)
+        analysis_menu.add_command(label="Statistical Analysis", command=self.show_statistical_analysis)
+        analysis_menu.add_command(label="Performance Trends", command=self.show_performance_trends)
+        analysis_menu.add_command(label="Anomaly Detection", command=self.detect_anomalies)
+        
+        # Settings menu
+        settings_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Settings", menu=settings_menu)
+        settings_menu.add_command(label="Alert Thresholds", command=self.configure_alerts)
+        settings_menu.add_command(label="Graph Settings", command=self.configure_graph_settings)
         
     def create_file_section(self):
         file_frame = ttk.LabelFrame(self.main_container, text="File Selection", padding="10")
@@ -153,20 +191,50 @@ class GamingAnalyzerGUI:
         
         # Graph type selection
         ttk.Label(analysis_frame, text="Graph Type:").grid(row=0, column=0, padx=5, pady=2, sticky=tk.W)
-        self.graph_type = ttk.Combobox(analysis_frame, values=["Temperature", "CPU Usage", "GPU Usage", "All Metrics"])
+        self.graph_type = ttk.Combobox(analysis_frame, values=[
+            "Temperature", "CPU Usage", "GPU Usage", "All Metrics",
+            "Correlation", "Heatmap", "Performance Trends"
+        ])
         self.graph_type.grid(row=0, column=1, padx=5, pady=2, sticky=(tk.W, tk.E))
         self.graph_type.set("Temperature")
         
         # Time range selection
         ttk.Label(analysis_frame, text="Time Range:").grid(row=1, column=0, padx=5, pady=2, sticky=tk.W)
-        self.time_range = ttk.Combobox(analysis_frame, values=["All", "Morning (6AM-12PM)", "Afternoon (12PM-6PM)", "Evening (6PM-12AM)", "Night (12AM-6AM)"])
+        self.time_range = ttk.Combobox(analysis_frame, values=[
+            "All", "Morning (6AM-12PM)", "Afternoon (12PM-6PM)", 
+            "Evening (6PM-12AM)", "Night (12AM-6AM)", "Custom Range"
+        ])
         self.time_range.grid(row=1, column=1, padx=5, pady=2, sticky=(tk.W, tk.E))
         self.time_range.set("All")
+        self.time_range.bind('<<ComboboxSelected>>', self.on_time_range_change)
+        
+        # Custom date range frame
+        self.date_frame = ttk.Frame(analysis_frame)
+        self.date_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        
+        ttk.Label(self.date_frame, text="From:").grid(row=0, column=0, padx=5)
+        self.start_date = DateEntry(self.date_frame, width=12, background=TOKYO_NIGHT['accent'],
+                                  foreground=TOKYO_NIGHT['bg'], borderwidth=2)
+        self.start_date.grid(row=0, column=1, padx=5)
+        
+        ttk.Label(self.date_frame, text="To:").grid(row=0, column=2, padx=5)
+        self.end_date = DateEntry(self.date_frame, width=12, background=TOKYO_NIGHT['accent'],
+                                foreground=TOKYO_NIGHT['bg'], borderwidth=2)
+        self.end_date.grid(row=0, column=3, padx=5)
+        
+        self.date_frame.grid_remove()  # Hide initially
         
         # Analysis button
         analyze_button = ttk.Button(analysis_frame, text="Analyze", command=self.analyze_data)
-        analyze_button.grid(row=2, column=0, columnspan=2, pady=10, sticky=(tk.W, tk.E))
+        analyze_button.grid(row=3, column=0, columnspan=2, pady=10, sticky=(tk.W, tk.E))
         
+    def on_time_range_change(self, event):
+        """Handle time range selection change"""
+        if self.time_range.get() == "Custom Range":
+            self.date_frame.grid()
+        else:
+            self.date_frame.grid_remove()
+            
     def create_graph_section(self):
         graph_frame = ttk.LabelFrame(self.main_container, text="Graph Display", padding="10")
         graph_frame.grid(row=1, column=1, rowspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
@@ -664,6 +732,284 @@ class GamingAnalyzerGUI:
             messagebox.showinfo("Success", "Analysis copied to clipboard!")
         else:
             messagebox.showwarning("Warning", "No analysis to copy!")
+
+    def show_statistical_analysis(self):
+        """Show detailed statistical analysis"""
+        if self.df is None:
+            messagebox.showwarning("Warning", "Please load data first!")
+            return
+            
+        # Create new window for statistical analysis
+        stats_window = tk.Toplevel(self.root)
+        stats_window.title("Statistical Analysis")
+        stats_window.geometry("600x400")
+        
+        # Create text widget for analysis
+        text_widget = tk.Text(stats_window, wrap=tk.WORD, padx=10, pady=10)
+        text_widget.pack(fill=tk.BOTH, expand=True)
+        
+        # Perform statistical analysis
+        analysis_text = "Statistical Analysis Report\n"
+        analysis_text += "=" * 30 + "\n\n"
+        
+        # Temperature analysis
+        temp_cols = [col for col in self.df.columns if 'temperature' in col.lower() or 'temp' in col.lower()]
+        if temp_cols:
+            analysis_text += "Temperature Analysis:\n"
+            for col in temp_cols:
+                stats_data = self.df[col].describe()
+                analysis_text += f"\n{col}:\n"
+                analysis_text += f"Mean: {stats_data['mean']:.2f}°C\n"
+                analysis_text += f"Std Dev: {stats_data['std']:.2f}°C\n"
+                analysis_text += f"Min: {stats_data['min']:.2f}°C\n"
+                analysis_text += f"Max: {stats_data['max']:.2f}°C\n"
+                analysis_text += f"25th percentile: {stats_data['25%']:.2f}°C\n"
+                analysis_text += f"75th percentile: {stats_data['75%']:.2f}°C\n"
+        
+        # CPU Usage analysis
+        cpu_cols = [col for col in self.df.columns if 'cpu' in col.lower() and 'usage' in col.lower()]
+        if cpu_cols:
+            analysis_text += "\nCPU Usage Analysis:\n"
+            for col in cpu_cols:
+                stats_data = self.df[col].describe()
+                analysis_text += f"\n{col}:\n"
+                analysis_text += f"Mean: {stats_data['mean']:.2f}%\n"
+                analysis_text += f"Std Dev: {stats_data['std']:.2f}%\n"
+                analysis_text += f"Min: {stats_data['min']:.2f}%\n"
+                analysis_text += f"Max: {stats_data['max']:.2f}%\n"
+        
+        # GPU Usage analysis
+        gpu_cols = [col for col in self.df.columns if 'gpu' in col.lower() and 'usage' in col.lower()]
+        if gpu_cols:
+            analysis_text += "\nGPU Usage Analysis:\n"
+            for col in gpu_cols:
+                stats_data = self.df[col].describe()
+                analysis_text += f"\n{col}:\n"
+                analysis_text += f"Mean: {stats_data['mean']:.2f}%\n"
+                analysis_text += f"Std Dev: {stats_data['std']:.2f}%\n"
+                analysis_text += f"Min: {stats_data['min']:.2f}%\n"
+                analysis_text += f"Max: {stats_data['max']:.2f}%\n"
+        
+        # Correlation analysis
+        if len(temp_cols) > 0 and (len(cpu_cols) > 0 or len(gpu_cols) > 0):
+            analysis_text += "\nCorrelation Analysis:\n"
+            for temp_col in temp_cols:
+                for cpu_col in cpu_cols:
+                    corr = self.df[temp_col].corr(self.df[cpu_col])
+                    analysis_text += f"\n{temp_col} vs {cpu_col}:\n"
+                    analysis_text += f"Correlation coefficient: {corr:.2f}\n"
+                for gpu_col in gpu_cols:
+                    corr = self.df[temp_col].corr(self.df[gpu_col])
+                    analysis_text += f"\n{temp_col} vs {gpu_col}:\n"
+                    analysis_text += f"Correlation coefficient: {corr:.2f}\n"
+        
+        text_widget.insert(tk.END, analysis_text)
+        text_widget.config(state=tk.DISABLED)
+        
+    def show_performance_trends(self):
+        """Show performance trends analysis"""
+        if self.df is None:
+            messagebox.showwarning("Warning", "Please load data first!")
+            return
+            
+        # Create new window for trends
+        trends_window = tk.Toplevel(self.root)
+        trends_window.title("Performance Trends")
+        trends_window.geometry("800x600")
+        
+        # Create figure for trends
+        fig = plt.Figure(figsize=(10, 8))
+        canvas = FigureCanvasTkAgg(fig, master=trends_window)
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        
+        # Create subplots
+        gs = fig.add_gridspec(3, 1)
+        ax1 = fig.add_subplot(gs[0])
+        ax2 = fig.add_subplot(gs[1])
+        ax3 = fig.add_subplot(gs[2])
+        
+        # Plot trends
+        if 'Time' in self.df.columns:
+            time_data = self.df['Time']
+        else:
+            time_data = self.df.index
+            
+        # Temperature trends
+        temp_cols = [col for col in self.df.columns if 'temperature' in col.lower() or 'temp' in col.lower()]
+        for col in temp_cols:
+            ax1.plot(time_data, self.df[col], label=col)
+        ax1.set_title("Temperature Trends")
+        ax1.set_ylabel("Temperature (°C)")
+        ax1.legend()
+        ax1.grid(True)
+        
+        # CPU usage trends
+        cpu_cols = [col for col in self.df.columns if 'cpu' in col.lower() and 'usage' in col.lower()]
+        for col in cpu_cols:
+            ax2.plot(time_data, self.df[col], label=col)
+        ax2.set_title("CPU Usage Trends")
+        ax2.set_ylabel("Usage (%)")
+        ax2.legend()
+        ax2.grid(True)
+        
+        # GPU usage trends
+        gpu_cols = [col for col in self.df.columns if 'gpu' in col.lower() and 'usage' in col.lower()]
+        for col in gpu_cols:
+            ax3.plot(time_data, self.df[col], label=col)
+        ax3.set_title("GPU Usage Trends")
+        ax3.set_xlabel("Time")
+        ax3.set_ylabel("Usage (%)")
+        ax3.legend()
+        ax3.grid(True)
+        
+        fig.tight_layout()
+        canvas.draw()
+        
+    def detect_anomalies(self):
+        """Detect anomalies in the data"""
+        if self.df is None:
+            messagebox.showwarning("Warning", "Please load data first!")
+            return
+            
+        # Create new window for anomalies
+        anomalies_window = tk.Toplevel(self.root)
+        anomalies_window.title("Anomaly Detection")
+        anomalies_window.geometry("600x400")
+        
+        # Create text widget for anomalies
+        text_widget = tk.Text(anomalies_window, wrap=tk.WORD, padx=10, pady=10)
+        text_widget.pack(fill=tk.BOTH, expand=True)
+        
+        # Detect anomalies using Z-score method
+        anomalies_text = "Anomaly Detection Report\n"
+        anomalies_text += "=" * 30 + "\n\n"
+        
+        # Temperature anomalies
+        temp_cols = [col for col in self.df.columns if 'temperature' in col.lower() or 'temp' in col.lower()]
+        if temp_cols:
+            anomalies_text += "Temperature Anomalies:\n"
+            for col in temp_cols:
+                z_scores = np.abs(stats.zscore(self.df[col].dropna()))
+                anomalies = self.df[z_scores > 3]  # Values more than 3 standard deviations
+                if not anomalies.empty:
+                    anomalies_text += f"\n{col}:\n"
+                    for idx, row in anomalies.iterrows():
+                        anomalies_text += f"Time: {idx}, Value: {row[col]:.2f}°C\n"
+        
+        # CPU usage anomalies
+        cpu_cols = [col for col in self.df.columns if 'cpu' in col.lower() and 'usage' in col.lower()]
+        if cpu_cols:
+            anomalies_text += "\nCPU Usage Anomalies:\n"
+            for col in cpu_cols:
+                z_scores = np.abs(stats.zscore(self.df[col].dropna()))
+                anomalies = self.df[z_scores > 3]
+                if not anomalies.empty:
+                    anomalies_text += f"\n{col}:\n"
+                    for idx, row in anomalies.iterrows():
+                        anomalies_text += f"Time: {idx}, Value: {row[col]:.2f}%\n"
+        
+        # GPU usage anomalies
+        gpu_cols = [col for col in self.df.columns if 'gpu' in col.lower() and 'usage' in col.lower()]
+        if gpu_cols:
+            anomalies_text += "\nGPU Usage Anomalies:\n"
+            for col in gpu_cols:
+                z_scores = np.abs(stats.zscore(self.df[col].dropna()))
+                anomalies = self.df[z_scores > 3]
+                if not anomalies.empty:
+                    anomalies_text += f"\n{col}:\n"
+                    for idx, row in anomalies.iterrows():
+                        anomalies_text += f"Time: {idx}, Value: {row[col]:.2f}%\n"
+        
+        text_widget.insert(tk.END, anomalies_text)
+        text_widget.config(state=tk.DISABLED)
+        
+    def configure_alerts(self):
+        """Configure alert thresholds"""
+        # Create new window for alert configuration
+        alert_window = tk.Toplevel(self.root)
+        alert_window.title("Configure Alerts")
+        alert_window.geometry("300x200")
+        
+        # Create entry fields for thresholds
+        ttk.Label(alert_window, text="Temperature Threshold (°C):").grid(row=0, column=0, padx=5, pady=5)
+        temp_entry = ttk.Entry(alert_window)
+        temp_entry.insert(0, str(self.alert_thresholds['temperature']))
+        temp_entry.grid(row=0, column=1, padx=5, pady=5)
+        
+        ttk.Label(alert_window, text="CPU Usage Threshold (%):").grid(row=1, column=0, padx=5, pady=5)
+        cpu_entry = ttk.Entry(alert_window)
+        cpu_entry.insert(0, str(self.alert_thresholds['cpu_usage']))
+        cpu_entry.grid(row=1, column=1, padx=5, pady=5)
+        
+        ttk.Label(alert_window, text="GPU Usage Threshold (%):").grid(row=2, column=0, padx=5, pady=5)
+        gpu_entry = ttk.Entry(alert_window)
+        gpu_entry.insert(0, str(self.alert_thresholds['gpu_usage']))
+        gpu_entry.grid(row=2, column=1, padx=5, pady=5)
+        
+        def save_thresholds():
+            try:
+                self.alert_thresholds['temperature'] = float(temp_entry.get())
+                self.alert_thresholds['cpu_usage'] = float(cpu_entry.get())
+                self.alert_thresholds['gpu_usage'] = float(gpu_entry.get())
+                messagebox.showinfo("Success", "Alert thresholds updated!")
+                alert_window.destroy()
+            except ValueError:
+                messagebox.showerror("Error", "Please enter valid numbers!")
+        
+        ttk.Button(alert_window, text="Save", command=save_thresholds).grid(row=3, column=0, columnspan=2, pady=10)
+        
+    def export_analysis(self):
+        """Export analysis results to file"""
+        if self.df is None:
+            messagebox.showwarning("Warning", "Please load data first!")
+            return
+            
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        
+        if file_path:
+            try:
+                with open(file_path, 'w') as f:
+                    f.write(self.text_widget.get(1.0, tk.END))
+                messagebox.showinfo("Success", "Analysis exported successfully!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error exporting analysis: {str(e)}")
+                
+    def configure_graph_settings(self):
+        """Configure graph display settings"""
+        # Create new window for graph settings
+        settings_window = tk.Toplevel(self.root)
+        settings_window.title("Graph Settings")
+        settings_window.geometry("300x200")
+        
+        # Create settings options
+        ttk.Label(settings_window, text="Graph Style:").grid(row=0, column=0, padx=5, pady=5)
+        style_var = tk.StringVar(value="line")
+        ttk.Radiobutton(settings_window, text="Line", variable=style_var, value="line").grid(row=0, column=1)
+        ttk.Radiobutton(settings_window, text="Bar", variable=style_var, value="bar").grid(row=0, column=2)
+        
+        ttk.Label(settings_window, text="Show Grid:").grid(row=1, column=0, padx=5, pady=5)
+        grid_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(settings_window, variable=grid_var).grid(row=1, column=1)
+        
+        ttk.Label(settings_window, text="Show Legend:").grid(row=2, column=0, padx=5, pady=5)
+        legend_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(settings_window, variable=legend_var).grid(row=2, column=1)
+        
+        def apply_settings():
+            # Update graph settings
+            plt.style.use('dark_background')
+            plt.rcParams.update({
+                'axes.grid': grid_var.get(),
+                'legend.frameon': legend_var.get()
+            })
+            # Redraw current graph
+            self.analyze_data()
+            settings_window.destroy()
+            
+        ttk.Button(settings_window, text="Apply", command=apply_settings).grid(row=3, column=0, columnspan=3, pady=10)
 
 if __name__ == "__main__":
     root = tk.Tk()
