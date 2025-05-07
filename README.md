@@ -1,10 +1,22 @@
-# 🎮 Metric Mate
 
-A modern, user-friendly GUI application for analyzing and visualizing gaming performance metrics. Built with Python and Tkinter, **Metric Mate** features a sleek **Tokyo Night** theme and powerful tools for performance diagnostics and insights.
 
-![Metric Mate Screenshot](./icon.png)
+<h1 align="center">🎮 Metric Mate</h1>
 
----
+<p align="center">
+  <em>A modern, Python-based GUI for visualizing and analyzing gaming performance metrics with a Tokyo Night theme.</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/license/rafay99-epic/MetricMate?style=flat-square" alt="MIT License"/>
+  <img src="https://img.shields.io/badge/python-3.7+-blue.svg?style=flat-square" alt="Python Version"/>
+  <img src="https://img.shields.io/github/issues/rafay99-epic/MetricMate?style=flat-square" alt="Issues"/>
+  <img src="https://img.shields.io/github/stars/rafay99-epic/MetricMate?style=flat-square" alt="Stars"/>
+  <img src="https://img.shields.io/github/last-commit/rafay99-epic/MetricMate?style=flat-square" alt="Last Commit"/>
+</p>
+
+<p align="center">
+  <img src="./icon.png" alt="Metric Mate Screenshot" width="600"/>
+</p>
 
 ## 🚀 Features
 
@@ -35,7 +47,7 @@ A modern, user-friendly GUI application for analyzing and visualizing gaming per
 - Export graphs and analysis (PNG/text)
 - Copy insights directly to clipboard
 
----
+
 
 ## 📦 Requirements
 
@@ -52,7 +64,6 @@ A modern, user-friendly GUI application for analyzing and visualizing gaming per
   scipy
   ```
 
----
 
 ## 🛠 Installation
 
@@ -76,7 +87,7 @@ A modern, user-friendly GUI application for analyzing and visualizing gaming per
    pip install -r requirements.txt
    ```
 
----
+
 
 ## ▶️ Usage
 
@@ -102,7 +113,7 @@ A modern, user-friendly GUI application for analyzing and visualizing gaming per
    - Export text summary
    - Copy results to clipboard
 
----
+
 
 ## 📂 CSV Format
 
@@ -120,7 +131,7 @@ Time,CPU Temperature,GPU Temperature,CPU Usage,GPU Usage
 2024-01-01 12:01:00,67,72,50,65
 ```
 
----
+
 
 ## 🔍 Feature Breakdown
 
@@ -147,7 +158,7 @@ Time,CPU Temperature,GPU Temperature,CPU Usage,GPU Usage
 - Smooth dark theme design
 - Clean and organized interface
 
----
+
 
 ## 🧩 Roadmap
 
@@ -158,20 +169,20 @@ Time,CPU Temperature,GPU Temperature,CPU Usage,GPU Usage
 - [ ] Additional export formats (PDF, XLSX)
 - [ ] Plugin system for extensibility
 
----
+
 
 ## 🙌 Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you’d like to change.
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
----
+
 
 ## 📄 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
----
+
 
 ## 💬 Support
 
@@ -180,7 +191,7 @@ If you encounter bugs or have suggestions:
 1. Check the [Issues](https://github.com/rafay99-epic/MetricMate/issues) page.
 2. Open a new issue if it’s not already reported.
 
----
+
 
 ## 🙏 Acknowledgments
 
@@ -188,7 +199,7 @@ If you encounter bugs or have suggestions:
 - Python open-source community
 - All contributors and users of Metric Mate
 
----
+
 
 ## 👨‍💻 Author
 
@@ -197,6 +208,5 @@ A passionate full-stack developer and machine learning engineer. I love creating
 🌐 **Portfolio**: [rafay99.com](https://rafay99.com)
 📫 **Email**: [99marafay@gmail.com](mailto:99marafay@gmail.com)
 
----
 
-Let me know if you want a badge section (e.g., Python version, License, GitHub stars) or a live demo GIF embedded.
+
